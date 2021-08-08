@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
+const passport = require('passport');
+const passportLocalMongoose = require('passport-local-mongoose');
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -12,4 +13,12 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-module.exports = new mongoose.model('User', userSchema);
+userSchema.plugin(passportLocalMongoose);
+
+const User = new mongoose.model('User', userSchema);
+
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+module.exports = User;

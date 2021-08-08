@@ -1,27 +1,24 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
+const passport = require('passport');
 const User = require('../models/user');
 const router = express.Router();
-const saltRounds = 10;
 
 router.get('/', (req, res) => {
   res.render('register');
 });
 
-router.post('/', (req, res) => {
-  bcrypt.hash(req.body.password, saltRounds, async (err, hash) => {
-    const newUser = new User({
-      email: req.body.username,
-      password: hash,
-    });
-
-    try {
-      await newUser.save();
-      res.render('secrets');
-    } catch (err) {
-      res.status(500).send({ message: err.message });
+router.post('/', async (req, res) => {
+  await User.register(
+    { username: req.body.username },
+    req.body.password,
+    function (err, user) {
+      if (err) {
+        console.error(err);
+        return res.redirect('/register');
+      }
+      passport.authenticate('local'), (req, res) => res.redirect('/secrets');
     }
-  });
+  );
 });
 
 module.exports = router;
